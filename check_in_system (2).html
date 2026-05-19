@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Hab Check-In/Out System</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9f9f9;
+            --bg-tertiary: #f0f0f0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #e0e0e0;
+            --accent: #4CAF50;
+            --accent-red: #f44336;
+            --button-hover: #e8e8e8;
+        }
+
+        html.dark-mode {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #242424;
+            --bg-tertiary: #333333;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-color: #404040;
+            --button-hover: #3a3a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 12px;
+            gap: 8px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .dark-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 6px;
+            transition: all 0.2s;
+            border-radius: 6px;
+        }
+
+        .dark-toggle:hover {
+            background: var(--button-hover);
+        }
+
+        .section-header {
+            padding: 16px 12px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .record-item {
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .record-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .record-status {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .status-in {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-out {
+            background: var(--text-tertiary);
+            color: white;
+        }
+
+        .record-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .stats-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .stats-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stats-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px 40px 40px;
+            overflow-y: auto;
+        }
+
+        .check-in-area {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .greeting {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .greeting-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .step-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .step-container:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        }
+
+        .step-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .big-button {
+            padding: 24px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .big-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .big-button.selected {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .big-button.selected.check-out {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .button-icon {
+            font-size: 32px;
+        }
+
+        .dropdown-select {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: var(--button-hover);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .submit-button:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ===== NOTIFICATION ===== */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .notification.error {
+            background: #f44336;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .reset-button {
+            padding: 12px 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reset-button:hover {
+            background: var(--button-hover);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .greeting {
+                font-size: 28px;
+            }
+
+            .big-button {
+                padding: 20px;
+                font-size: 16px;
+            }
+
+            .button-icon {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="header-left">
+                    <div class="logo">✓</div>
+                    <div class="logo-text">Check-In System</div>
+                </div>
+                <button class="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+                    <span id="dark-icon">🌙</span>
+                </button>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-label">Today's Check-Ins</div>
+                <div class="stats-value" id="today-count">0</div>
+            </div>
+
+            <button class="sidebar-button" onclick="clearUIDisplay()" style="background: linear-gradient(135deg, #f44336, #e91e63); color: white; font-weight: 600; border: none;">
+                <span class="sidebar-icon">↻</span>
+                Reset Display
+            </button>
+
+            <div class="section-header">All Today's Activity</div>
+            <div id="all-activity-list"></div>
+
+            <div class="section-header">Currently Checked In</div>
+            <div id="active-list"></div>
+
+            <div class="section-header">Recently Checked Out</div>
+            <div id="recent-list"></div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="check-in-area">
+                <div class="greeting">
+                    <div class="greeting-icon">👋</div>
+                    <span id="greeting-text">Good Afternoon</span>
+                </div>
+
+                <!-- STEP 1: DSP Name -->
+                <div class="step-container">
+                    <div class="step-title">Step 1: Select Your Name</div>
+                    <select class="dropdown-select" id="dsp-select" onchange="updateForm()">
+                        <option value="">-- Select DSP Name --</option>
+                        <option value="Meir Junik">Meir Junik</option>
+                        <option value="Shmuel Jenkins">Shmuel Jenkins</option>
+                        <option value="Yehoshua Katz">Yehoshua Katz</option>
+                    </select>
+                </div>
+
+                <!-- STEP 2: Service Type -->
+                <div class="step-container">
+                    <div class="step-title">Step 2: Select Service Type</div>
+                    <div class="button-grid">
+                        <button class="big-button" id="btn-dayhab" onclick="selectService('Day Hab')">
+                            <span class="button-icon">🏢</span>
+                            <span>Day Hab</span>
+                        </button>
+                        <button class="big-button" id="btn-community" onclick="selectService('Community Inclusion')">
+                            <span class="button-icon">🌍</span>
+                            <span>Community Inclusion</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Action -->
+                <div class="step-container">
+                    <div class="step-title">Step 3: Check In or Out</div>
+                    <div class="button-grid">
+                        <button class="big-button" id="btn-checkin" onclick="selectAction('Check In')">
+                            <span class="button-icon">✅</span>
+                            <span>Check In</span>
+                        </button>
+                        <button class="big-button check-out" id="btn-checkout" onclick="selectAction('Check Out')">
+                            <span class="button-icon">🚪</span>
+                            <span>Check Out</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LOCATION (Only for Community Inclusion) -->
+                <div class="step-container" id="location-section" style="display: none;">
+                    <div class="step-title">Location (Community Inclusion)</div>
+                    <select class="dropdown-select" id="location-select" onchange="checkOtherLocation()">
+                        <option value="">-- Select Location --</option>
+                        <option value="Lutzk">Lutzk</option>
+                        <option value="Rabbi Friedman's Yeshiva">Rabbi Friedman's Yeshiva</option>
+                        <option value="Lakewood Courtyard">Lakewood Courtyard</option>
+                        <option value="Chai Lifeline">Chai Lifeline</option>
+                        <option value="Tomche Shabbos">Tomche Shabbos</option>
+                        <option value="Philadelphia Bikur Cholim">Philadelphia Bikur Cholim</option>
+                        <option value="Gourmet Glatt">Gourmet Glatt</option>
+                        <option value="Walmart">Walmart</option>
+                        <option value="Evergreen">Evergreen</option>
+                        <option value="Bagel Nosh">Bagel Nosh</option>
+                        <option value="Bagel King">Bagel King</option>
+                        <option value="Four Corner">Four Corner</option>
+                        <option value="Menachem Kugel's">Menachem Kugel's</option>
+                        <option value="Chuckee Cheese">Chuckee Cheese</option>
+                        <option value="Jennensens">Jennensens</option>
+                        <option value="Finnegan's Bowling">Finnegan's Bowling</option>
+                        <option value="Other">Other (type below)</option>
+                    </select>
+                    <input type="text" 
+                           class="dropdown-select" 
+                           id="location-other" 
+                           placeholder="Type location here..." 
+                           style="display: none; margin-top: 12px;"
+                           oninput="updateForm()">
+                </div>
+
+                <!-- STEP 4: Individuals -->
+                <div class="step-container">
+                    <div class="step-title">Step 4: Select Individuals</div>
+                    <div class="checkbox-grid" id="individuals-list">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ind-1" value="Moshe Bak">
+                            <label for="ind-1">Moshe Bak</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ind-2" value="Shlomo (Shloimy) Bassman">
+                            <label for="ind-2">Shlomo (Shloimy) Bassman</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ind-3" value="Eli Cohen">
+                            <label for="ind-3">Eli Cohen</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ind-4" value="Joshua (Shua) Rosenhan">
+                            <label for="ind-4">Joshua (Shua) Rosenhan</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ind-5" value="Aaron (Nussi) Spira">
+                            <label for="ind-5">Aaron (Nussi) Spira</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT -->
+                <div style="display: flex; gap: 12px;">
+                    <button class="submit-button" id="submit-btn" onclick="submitCheckIn()" disabled>
+                        Submit Check-In
+                    </button>
+                    <button class="reset-button" onclick="resetForm()">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ===== DATA PERSISTENCE =====
+        const STORAGE_KEY = 'checkInSystem_data';
+        const STORAGE_UI_KEY = 'checkInSystem_uiData';
+        const STORAGE_DATE_KEY = 'checkInSystem_lastClear';
+        
+        let formState = {
+            dsp: '',
+            service: '',
+            action: '',
+            location: '',
+            individuals: []
+        };
+
+        let records = loadRecords();
+        let uiRecords = loadUIRecords();
+
+        function loadRecords() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function saveRecords() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        function loadUIRecords() {
+            checkMidnightReset();
+            const saved = localStorage.getItem(STORAGE_UI_KEY);
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function saveUIRecords() {
+            localStorage.setItem(STORAGE_UI_KEY, JSON.stringify(uiRecords));
+        }
+
+        function checkMidnightReset() {
+            const today = new Date().toDateString();
+            const lastClear = localStorage.getItem(STORAGE_DATE_KEY);
+            
+            if (lastClear !== today) {
+                // New day - clear UI records
+                localStorage.setItem(STORAGE_UI_KEY, JSON.stringify([]));
+                localStorage.setItem(STORAGE_DATE_KEY, today);
+            }
+        }
+
+        function clearUIDisplay() {
+            try {
+                if (confirm('Clear today\'s display?\n\nThis will NOT affect the permanent Google Sheets data.')) {
+                    uiRecords = [];
+                    localStorage.setItem(STORAGE_UI_KEY, JSON.stringify([]));
+                    updateSidebar();
+                    showNotification('✓ Display cleared! Google Sheets data is safe.', 'success');
+                }
+            } catch (error) {
+                console.error('Error clearing display:', error);
+                alert('Error clearing display. Please refresh the page and try again.');
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        function init() {
+            updateGreeting();
+            applyDarkMode();
+            updateSidebar();
+        }
+
+        // ===== DARK MODE =====
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('dark-icon');
+            
+            if (html.classList.contains('dark-mode')) {
+                html.classList.remove('dark-mode');
+                icon.textContent = '🌙';
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                html.classList.add('dark-mode');
+                icon.textContent = '☀️';
+                localStorage.setItem('darkMode', 'true');
+            }
+        }
+
+        function applyDarkMode() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const html = document.documentElement;
+            const icon = document.getElementById('dark-icon');
+            
+            if (darkMode) {
+                html.classList.add('dark-mode');
+                icon.textContent = '☀️';
+            } else {
+                icon.textContent = '🌙';
+            }
+        }
+
+        // ===== GREETING =====
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            const greetingText = document.getElementById('greeting-text');
+            
+            if (hour < 12) {
+                greetingText.textContent = 'Good Morning';
+            } else if (hour < 18) {
+                greetingText.textContent = 'Good Afternoon';
+            } else {
+                greetingText.textContent = 'Good Evening';
+            }
+        }
+
+        // ===== FORM HANDLING =====
+        function selectService(service) {
+            formState.service = service;
+            
+            document.getElementById('btn-dayhab').classList.remove('selected');
+            document.getElementById('btn-community').classList.remove('selected');
+            
+            if (service === 'Day Hab') {
+                document.getElementById('btn-dayhab').classList.add('selected');
+                document.getElementById('location-section').style.display = 'none';
+                formState.location = '';
+            } else {
+                document.getElementById('btn-community').classList.add('selected');
+                document.getElementById('location-section').style.display = 'block';
+            }
+            
+            updateForm();
+        }
+
+        function selectAction(action) {
+            formState.action = action;
+            
+            document.getElementById('btn-checkin').classList.remove('selected');
+            document.getElementById('btn-checkout').classList.remove('selected');
+            
+            if (action === 'Check In') {
+                document.getElementById('btn-checkin').classList.add('selected');
+            } else {
+                document.getElementById('btn-checkout').classList.add('selected');
+            }
+            
+            updateForm();
+        }
+
+        function checkOtherLocation() {
+            const locationSelect = document.getElementById('location-select');
+            const locationOther = document.getElementById('location-other');
+            
+            if (locationSelect.value === 'Other') {
+                locationOther.style.display = 'block';
+                formState.location = locationOther.value;
+            } else {
+                locationOther.style.display = 'none';
+                formState.location = locationSelect.value;
+            }
+            
+            updateForm();
+        }
+
+        function updateForm() {
+            formState.dsp = document.getElementById('dsp-select').value;
+            
+            // Get location if Community Inclusion
+            if (formState.service === 'Community Inclusion') {
+                const locationSelect = document.getElementById('location-select');
+                const locationOther = document.getElementById('location-other');
+                
+                if (locationSelect.value === 'Other') {
+                    formState.location = locationOther.value;
+                } else {
+                    formState.location = locationSelect.value;
+                }
+            }
+            
+            // Get selected individuals
+            const checkboxes = document.querySelectorAll('#individuals-list input[type="checkbox"]:checked');
+            formState.individuals = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Enable submit button if form is complete
+            const submitBtn = document.getElementById('submit-btn');
+            let isComplete = formState.dsp && formState.service && formState.action && formState.individuals.length > 0;
+            
+            // For Community Inclusion, also require location
+            if (formState.service === 'Community Inclusion') {
+                isComplete = isComplete && formState.location;
+            }
+            
+            submitBtn.disabled = !isComplete;
+        }
+
+        // Update form when checkboxes change
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox') {
+                updateForm();
+            }
+        });
+
+        // ===== SUBMIT =====
+        function submitCheckIn() {
+            const timestamp = new Date();
+            
+            formState.individuals.forEach(individual => {
+                const record = {
+                    id: Date.now() + Math.random(),
+                    dsp: formState.dsp,
+                    service: formState.service,
+                    action: formState.action,
+                    location: formState.location || 'Day Hab Site',
+                    individual: individual,
+                    timestamp: timestamp.toISOString(),
+                    timeDisplay: timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                };
+                
+                // Save to permanent records (for Google Sheets)
+                records.unshift(record);
+                
+                // Save to UI records (for display, resets daily)
+                uiRecords.unshift(record);
+            });
+            
+            saveRecords();
+            saveUIRecords();
+            updateSidebar();
+            
+            const individualsText = formState.individuals.length === 1 
+                ? formState.individuals[0] 
+                : `${formState.individuals.length} individuals`;
+            
+            showNotification(
+                `✓ ${formState.action} recorded for ${individualsText}`, 
+                'success'
+            );
+            
+            resetForm();
+        }
+
+        function resetForm() {
+            formState = {
+                dsp: '',
+                service: '',
+                action: '',
+                location: '',
+                individuals: []
+            };
+            
+            document.getElementById('dsp-select').value = '';
+            document.getElementById('btn-dayhab').classList.remove('selected');
+            document.getElementById('btn-community').classList.remove('selected');
+            document.getElementById('btn-checkin').classList.remove('selected');
+            document.getElementById('btn-checkout').classList.remove('selected');
+            document.getElementById('location-section').style.display = 'none';
+            document.getElementById('location-select').value = '';
+            document.getElementById('location-other').value = '';
+            document.getElementById('location-other').style.display = 'none';
+            
+            const checkboxes = document.querySelectorAll('#individuals-list input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        // ===== SIDEBAR =====
+        function updateSidebar() {
+            // Today's count (from UI records only)
+            const today = new Date().toDateString();
+            const todayRecords = uiRecords.filter(r => new Date(r.timestamp).toDateString() === today);
+            document.getElementById('today-count').textContent = todayRecords.length;
+            
+            // All Today's Activity (ALL check-ins and check-outs)
+            const allActivityList = document.getElementById('all-activity-list');
+            const allActivity = uiRecords.slice(0, 50); // Show up to 50 records
+            
+            if (allActivity.length === 0) {
+                allActivityList.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-tertiary);">No activity yet today</div>';
+            } else {
+                allActivityList.innerHTML = allActivity.map(r => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <div class="record-name">${r.individual}</div>
+                            <div class="record-status ${r.action === 'Check In' ? 'status-in' : 'status-out'}">
+                                ${r.action === 'Check In' ? 'IN' : 'OUT'}
+                            </div>
+                        </div>
+                        <div class="record-details">
+                            ${r.service}${r.location && r.service === 'Community Inclusion' ? ' • ' + r.location : ''}<br>
+                            ${r.dsp} • ${r.timeDisplay}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Currently checked in (from UI records)
+            const activeList = document.getElementById('active-list');
+            const checkedIn = getCurrentlyCheckedIn();
+            
+            if (checkedIn.length === 0) {
+                activeList.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-tertiary);">No one currently checked in</div>';
+            } else {
+                activeList.innerHTML = checkedIn.map(item => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <div class="record-name">${item.individual}</div>
+                            <div class="record-status status-in">IN</div>
+                        </div>
+                        <div class="record-details">
+                            ${item.service}<br>
+                            Since ${item.timeDisplay}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Recently Checked Out (from UI records, only check-outs)
+            const recentList = document.getElementById('recent-list');
+            const recentCheckouts = uiRecords.filter(r => r.action === 'Check Out').slice(0, 10);
+            
+            if (recentCheckouts.length === 0) {
+                recentList.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-tertiary);">No recent check-outs</div>';
+            } else {
+                recentList.innerHTML = recentCheckouts.map(r => `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <div class="record-name">${r.individual}</div>
+                            <div class="record-status status-out">OUT</div>
+                        </div>
+                        <div class="record-details">
+                            ${r.service}${r.location && r.service === 'Community Inclusion' ? ' • ' + r.location : ''}<br>
+                            ${r.dsp} • ${r.timeDisplay}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function getCurrentlyCheckedIn() {
+            const checkedIn = [];
+            const individuals = new Set(uiRecords.map(r => r.individual));
+            
+            individuals.forEach(individual => {
+                const personRecords = uiRecords
+                    .filter(r => r.individual === individual)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                if (personRecords.length > 0 && personRecords[0].action === 'Check In') {
+                    checkedIn.push(personRecords[0]);
+                }
+            });
+            
+            return checkedIn;
+        }
+
+        // ===== NOTIFICATIONS =====
+        function showNotification(message, type = '') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show ' + type;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                toggleDarkMode();
+            }
+            
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                resetForm();
+            }
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
