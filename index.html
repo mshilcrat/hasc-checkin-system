@@ -611,6 +611,11 @@
     <div class="notification" id="notification"></div>
 
     <script>
+        // ===== GOOGLE FORMS SUBMISSION =====
+        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc2nlBIRjRLi_yEdE4VvhCM_iHp5bXNA_3xWDw4cQkQZwynig/formResponse';
+        const FORM_ENTRY_IDS = {'Staff Name':'entry.1094858830','Location':'entry.1353969439','Check In or Out':'entry.1887463339','Service':'entry.1956038958','Individuals':'entry.995137149','Time Hour':'entry.648753095_hour','Time Minute':'entry.648753095_minute'};
+        function submitToGoogleForms(dsp,service,action,location,individual,timestamp){const formData=new FormData();formData.append(FORM_ENTRY_IDS['Staff Name'],dsp);formData.append(FORM_ENTRY_IDS['Location'],location||(service==='Day Hab'?'Day Hab Site':''));formData.append(FORM_ENTRY_IDS['Check In or Out'],action);formData.append(FORM_ENTRY_IDS['Service'],service);formData.append(FORM_ENTRY_IDS['Individuals'],individual);formData.append(FORM_ENTRY_IDS['Time Hour'],timestamp.getHours().toString());formData.append(FORM_ENTRY_IDS['Time Minute'],timestamp.getMinutes().toString());fetch(GOOGLE_FORM_URL,{method:'POST',body:formData,mode:'no-cors'}).catch(err=>console.log('Form submitted'));}
+        
         // ===== DATA PERSISTENCE =====
         const STORAGE_KEY = 'checkInSystem_data';
         const STORAGE_UI_KEY = 'checkInSystem_uiData';
@@ -739,9 +744,44 @@
             
             updateForm();
         }
+        function handleServiceSwitch(newService) {
+            const currentlyCheckedIn = getCurrentlyCheckedIn();
+            const individualsToAutoCheckout = [];
+            currentlyCheckedIn.forEach(item => {
+                if (item.service !== newService) {
+                    individualsToAutoCheckout.push(item);
+                }
+            });
+            if (individualsToAutoCheckout.length > 0) {
+                const dsp = document.getElementById('dsp-select').value;
+                if (dsp) {
+                    individualsToAutoCheckout.forEach(item => {
+                        const timestamp = new Date();
+                        const autoCheckoutRecord = {
+                            id: Date.now() + Math.random(),
+                            dsp: dsp,
+                            service: item.service,
+                            action: 'Check Out',
+                            location: item.location || 'Day Hab Site',
+                            individual: item.individual,
+                            timestamp: timestamp.toISOString(),
+                            timeDisplay: timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                        };
+                        records.unshift(autoCheckoutRecord);
+                        uiRecords.unshift(autoCheckoutRecord);
+                        submitToGoogleForms(dsp, item.service, 'Check Out', item.location || 'Day Hab Site', item.individual, timestamp);
+                    });
+                    saveRecords();
+                    saveUIRecords();
+                    updateSidebar();
+                    showNotification('✓ Auto-checked out from previous service', 'success');
+                }
+            }
+        }
 
         function selectAction(action) {
             formState.action = action;
+            handleServiceSwitch(service);
             
             document.getElementById('btn-checkin').classList.remove('selected');
             document.getElementById('btn-checkout').classList.remove('selected');
@@ -829,6 +869,7 @@
                 
                 // Save to UI records (for display, resets daily)
                 uiRecords.unshift(record);
+                submitToGoogleForms(formState.dsp, formState.service, formState.action, record.location, individual, timestamp);
             });
             
             saveRecords();
