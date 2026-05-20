@@ -449,7 +449,43 @@
                 font-size: 28px;
             }
         }
-    </style>
+            /* === MOBILE RESPONSIVE PATCH === */
+        @media (max-width: 640px) {
+            .app-container { flex-direction: column !important; }
+            .sidebar {
+                width: 100% !important;
+                max-height: none !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border-color);
+                order: 2;
+            }
+            .main-content {
+                width: 100% !important;
+                padding: 12px !important;
+                order: 1;
+            }
+            .greeting { font-size: 22px !important; }
+            .card { padding: 14px !important; margin-bottom: 12px !important; }
+            .service-grid,
+            .checkinout-grid,
+            .individuals-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            .big-button { padding: 16px !important; font-size: 16px !important; min-height: 56px; }
+            .button-icon { font-size: 24px !important; }
+            .step-label { font-size: 13px !important; }
+            select, input[type="text"], button { font-size: 16px !important; min-height: 44px; }
+            .individual-item, label { padding: 12px !important; font-size: 15px !important; }
+            input[type="checkbox"] { width: 22px; height: 22px; }
+            .activity-item { padding: 10px !important; font-size: 13px !important; }
+        }
+        @media (max-width: 380px) {
+            .greeting { font-size: 18px !important; }
+            .main-content { padding: 8px !important; }
+            .card { padding: 10px !important; }
+        }
+</style>
 </head>
 <body>
 <div id="homepage" style="display:block">
