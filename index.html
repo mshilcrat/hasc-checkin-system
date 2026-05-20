@@ -781,7 +781,7 @@
 
         function selectAction(action) {
             formState.action = action;
-            handleServiceSwitch(service);
+            handleServiceSwitch(formState.service);
             
             document.getElementById('btn-checkin').classList.remove('selected');
             document.getElementById('btn-checkout').classList.remove('selected');
